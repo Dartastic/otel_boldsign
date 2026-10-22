@@ -1,15 +1,16 @@
-// Licensed under the Dartastic Pro Software License Agreement.
+// Licensed under the Apache License, Version 2.0
 // Copyright 2025-2026 Mindful Software LLC d/b/a Dartastic.io, All rights reserved.
 
-import 'package:dartastic_opentelemetry/dartastic_opentelemetry.dart';
+import 'package:dartastic_opentelemetry_api/dartastic_opentelemetry_api.dart';
 
 import 'otel_boldsign_suppression.dart';
 
 const _tracerName = 'dartastic_otel_libs_boldsign';
 
-Tracer _tracer() => OTel.tracerProvider().getTracer(_tracerName);
+APITracer _tracer() => OTelAPI.tracerProvider().getTracer(_tracerName);
 
 class BoldsignResult {
+  /// Creates a result.
   const BoldsignResult({
     this.itemCount,
     this.totalRecords,
@@ -58,8 +59,13 @@ class BoldsignResult {
   final int? statusCode;
 }
 
+/// What a traced call returned: the value for the caller plus fields
+/// recorded on the span.
 class BoldsignCallResult<T> {
+  /// Creates a call result.
   const BoldsignCallResult({required this.value, this.result});
+
+  /// The value returned to the caller.
   final T value;
   final BoldsignResult? result;
 }
@@ -89,32 +95,32 @@ Future<T> tracedBoldsign<T>({
   final span = _tracer().startSpan(
     'boldsign $operation',
     kind: SpanKind.client,
-    attributes: OTel.attributesFromMap(m),
+    attributes: OTelAPI.attributesFromMap(m),
   );
   try {
     final r = await invoke();
     if (r.result != null) {
       final extras = <Attribute<Object>>[];
       if (r.result!.itemCount != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'boldsign.item_count',
           r.result!.itemCount!,
         ));
       }
       if (r.result!.totalRecords != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'boldsign.total_records',
           r.result!.totalRecords!,
         ));
       }
       if (r.result!.documentId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'boldsign.document.id',
           r.result!.documentId!,
         ));
       }
       if (r.result!.status != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'boldsign.document.status',
           r.result!.status!,
         ));
@@ -128,43 +134,43 @@ Future<T> tracedBoldsign<T>({
         }
       }
       if (r.result!.brandId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'boldsign.brand.id',
           r.result!.brandId!,
         ));
       }
       if (r.result!.signerCount != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'boldsign.signer_count',
           r.result!.signerCount!,
         ));
       }
       if (r.result!.signedCount != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'boldsign.signed_count',
           r.result!.signedCount!,
         ));
       }
       if (r.result!.embedded != null) {
-        extras.add(OTel.attributeBool(
+        extras.add(OTelAPI.attributeBool(
           'boldsign.embedded',
           r.result!.embedded!,
         ));
       }
       if (r.result!.envelopeKind != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'boldsign.envelope.kind',
           r.result!.envelopeKind!,
         ));
       }
       if (r.result!.requestId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'boldsign.request.id',
           r.result!.requestId!,
         ));
       }
       if (r.result!.statusCode != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'http.response.status_code',
           r.result!.statusCode!,
         ));
@@ -175,13 +181,13 @@ Future<T> tracedBoldsign<T>({
           );
         }
       }
-      if (extras.isNotEmpty) span.addAttributes(OTel.attributes(extras));
+      if (extras.isNotEmpty) span.addAttributes(OTelAPI.attributes(extras));
     }
     return r.value;
   } catch (e, st) {
-    span.addAttributes(OTel.attributes([
-      OTel.attributeString(
-        ErrorResource.errorType.key,
+    span.addAttributes(OTelAPI.attributes([
+      OTelAPI.attributeString(
+        ErrorAttributes.errorType.key,
         e.runtimeType.toString(),
       ),
     ]));
